@@ -19,6 +19,7 @@ const Reports = lazy(() => import('./pages/Reports'));
 const RecurringBills = lazy(() => import('./pages/RecurringBills'));
 const SplitExpenses = lazy(() => import('./pages/SplitExpenses'));
 const Settings = lazy(() => import('./pages/Settings'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PAGE_TITLES: Record<string, string> = {
@@ -33,6 +34,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/reports': 'Reports',
   '/recurring-bills': 'Recurring Bills',
   '/split-expenses': 'Split Expenses',
+  '/users': 'User Management',
   '/settings': 'Settings',
 };
 
@@ -80,6 +82,7 @@ function AppLayout() {
                 <Route path="/reports" component={Reports} />
                 <Route path="/recurring-bills" component={RecurringBills} />
                 <Route path="/split-expenses" component={SplitExpenses} />
+                <Route path="/users" component={UserManagement} />
                 <Route path="/settings" component={Settings} />
                 <Route component={NotFound} />
               </Switch>

@@ -2,7 +2,7 @@ import { Link, useRoute } from 'wouter';
 import {
   LayoutDashboard, Wallet, ArrowLeftRight, Tag, Target,
   CreditCard, TrendingUp, BarChart2, Users2,
-  Settings, HandCoins, Receipt, X
+  Settings, HandCoins, Receipt, X, UserCog
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -10,21 +10,23 @@ interface NavItem {
   path: string;
   label: string;
   icon: React.ElementType;
+  dividerBefore?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/accounts', label: 'Accounts', icon: Wallet },
-  { path: '/transactions', label: 'Transactions', icon: ArrowLeftRight },
-  { path: '/categories', label: 'Categories', icon: Tag },
-  { path: '/budget', label: 'Budget & Goals', icon: Target },
-  { path: '/loans', label: 'Loans', icon: HandCoins },
-  { path: '/credit-cards', label: 'Credit Cards', icon: CreditCard },
-  { path: '/cash-flow', label: 'Cash Flow', icon: TrendingUp },
-  { path: '/reports', label: 'Reports', icon: BarChart2 },
+  { path: '/dashboard',       label: 'Dashboard',       icon: LayoutDashboard },
+  { path: '/accounts',        label: 'Accounts',        icon: Wallet },
+  { path: '/transactions',    label: 'Transactions',    icon: ArrowLeftRight },
+  { path: '/categories',      label: 'Categories',      icon: Tag },
+  { path: '/budget',          label: 'Budget & Goals',  icon: Target },
+  { path: '/loans',           label: 'Loans',           icon: HandCoins },
+  { path: '/credit-cards',    label: 'Credit Cards',    icon: CreditCard },
+  { path: '/cash-flow',       label: 'Cash Flow',       icon: TrendingUp },
+  { path: '/reports',         label: 'Reports',         icon: BarChart2 },
   { path: '/recurring-bills', label: 'Recurring Bills', icon: Receipt },
-  { path: '/split-expenses', label: 'Split Expenses', icon: Users2 },
-  { path: '/settings', label: 'Settings', icon: Settings },
+  { path: '/split-expenses',  label: 'Split Expenses',  icon: Users2 },
+  { path: '/users',           label: 'User Management', icon: UserCog, dividerBefore: true },
+  { path: '/settings',        label: 'Settings',        icon: Settings },
 ];
 
 interface SidebarProps {
@@ -86,7 +88,10 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
           {NAV_ITEMS.map(item => (
-            <NavLink key={item.path} item={item} onClick={onClose} />
+            <div key={item.path}>
+              {item.dividerBefore && <div className="my-1.5 border-t border-gray-100" />}
+              <NavLink item={item} onClick={onClose} />
+            </div>
           ))}
         </nav>
 

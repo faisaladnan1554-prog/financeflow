@@ -122,6 +122,17 @@ export const recurringBillsApi = {
     req<RecurringBill>('POST', `/recurring-bills/${id}/pay`, { amount, month }),
 };
 
+// ── Admin — User Management ────────────────────────────────────────────────
+export const adminApi = {
+  getUsers: () => req<User[]>('GET', '/admin/users'),
+  createUser: (data: { name: string; email: string; password: string; currency?: string }) =>
+    req<User>('POST', '/admin/users', data),
+  updateUser: (id: string, data: { name?: string; email?: string; password?: string; currency?: string }) =>
+    req<User>('PUT', `/admin/users/${id}`, data),
+  deleteUser: (id: string) => req<{ success: boolean }>('DELETE', `/admin/users/${id}`),
+  clearMyData: () => req<{ success: boolean }>('DELETE', '/admin/data/clear'),
+};
+
 // ── Split Expenses ─────────────────────────────────────────────────────────
 export const splitExpensesApi = {
   getAll: () => req<SplitExpense[]>('GET', '/split-expenses'),
