@@ -2,7 +2,7 @@ import { Link, useRoute } from 'wouter';
 import {
   LayoutDashboard, Wallet, ArrowLeftRight, Tag, Target,
   CreditCard, TrendingUp, BarChart2, Users2,
-  Settings, HandCoins, Receipt, X, UserCog
+  Settings, HandCoins, Receipt, X, UserCog, Sparkles, Zap
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -25,6 +25,8 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/reports',         label: 'Reports',         icon: BarChart2 },
   { path: '/recurring-bills', label: 'Recurring Bills', icon: Receipt },
   { path: '/split-expenses',  label: 'Split Expenses',  icon: Users2 },
+  { path: '/ai-strategy',     label: 'AI Advisor',      icon: Sparkles, dividerBefore: true },
+  { path: '/pricing',         label: 'Pricing & Plans', icon: Zap },
   { path: '/users',           label: 'User Management', icon: UserCog, dividerBefore: true },
   { path: '/settings',        label: 'Settings',        icon: Settings },
 ];

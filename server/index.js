@@ -37,6 +37,9 @@ app.use('/api/credit-cards',    require('./routes/creditCards'));
 app.use('/api/recurring-bills', require('./routes/recurringBills'));
 app.use('/api/split-expenses',  require('./routes/splitExpenses'));
 app.use('/api/admin',           require('./routes/admin'));
+app.use('/api/ai',              require('./routes/ai'));
+app.use('/api/plans',           require('./routes/plans'));
+app.use('/api/payments',        require('./routes/payments'));
 
 // Health check
 app.get('/api/health', (req, res) => {

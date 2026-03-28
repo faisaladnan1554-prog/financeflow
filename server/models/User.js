@@ -9,6 +9,10 @@ const userSchema = new mongoose.Schema({
   language:         { type: String, default: 'en' },
   fiscalMonthStart: { type: Number, default: 1 },
   loginTime:        { type: Date },
+  plan:             { type: String, enum: ['free','basic','pro','enterprise'], default: 'free' },
+  planExpiry:       { type: Date, default: null },
+  aiApiKey:         { type: String, default: '' },
+  aiProvider:       { type: String, enum: ['openai','anthropic'], default: 'openai' },
 }, {
   timestamps: true,
   toJSON: {
@@ -16,7 +20,8 @@ const userSchema = new mongoose.Schema({
       ret.id = ret._id.toString();
       ret.createdAt = ret.createdAt?.toISOString().split('T')[0];
       ret.loginTime = ret.loginTime?.toISOString();
-      delete ret._id; delete ret.__v; delete ret.password;
+      ret.planExpiry = ret.planExpiry ? ret.planExpiry.toISOString() : null;
+      delete ret._id; delete ret.__v; delete ret.password; delete ret.aiApiKey;
       return ret;
     }
   }

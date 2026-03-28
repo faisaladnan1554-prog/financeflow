@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { User, Globe, Database, Shield, Info, Download, Upload, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, Globe, Database, Shield, Info, Download, Upload, Trash2, Brain, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useApp } from '../contexts/AppContext';
-import { adminApi, accountsApi, categoriesApi, transactionsApi, budgetsApi, goalsApi, loansApi, creditCardsApi, recurringBillsApi, splitExpensesApi } from '../lib/api';
+import { adminApi, accountsApi, categoriesApi, transactionsApi, budgetsApi, goalsApi, loansApi, creditCardsApi, recurringBillsApi, splitExpensesApi, aiApi } from '../lib/api';
 import { toast } from 'sonner';
 
 const CURRENCIES = [
@@ -21,6 +21,32 @@ export default function Settings() {
   const [name, setName] = useState(user?.name ?? '');
   const [email, setEmail] = useState(user?.email ?? '');
   const [importing, setImporting] = useState(false);
+
+  // AI settings state
+  const [aiProvider, setAiProvider] = useState<'openai' | 'anthropic'>('openai');
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [aiSettings, setAiSettings] = useState<{ aiProvider: string; hasApiKey: boolean }>({ aiProvider: 'openai', hasApiKey: false });
+
+  useEffect(() => {
+    aiApi.getSettings()
+      .then(s => {
+        setAiSettings(s);
+        setAiProvider(s.aiProvider as 'openai' | 'anthropic');
+      })
+      .catch(() => {/* ignore — not logged in yet */});
+  }, []);
+
+  const handleSaveAIKey = async () => {
+    try {
+      await aiApi.updateSettings(aiApiKey, aiProvider);
+      setAiSettings(prev => ({ ...prev, aiProvider, hasApiKey: aiApiKey.length > 0 || prev.hasApiKey }));
+      if (aiApiKey) setAiApiKey(''); // clear the field after saving for security
+      toast.success('AI settings saved');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to save AI settings');
+    }
+  };
 
   const handleSaveProfile = () => {
     if (!name.trim()) { toast.error('Name is required'); return; }
@@ -278,6 +304,58 @@ export default function Settings() {
               Sign Out
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* AI Configuration */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+          <Brain size={16} className="text-purple-500" />
+          <h3 className="text-sm font-semibold text-gray-900">AI Financial Advisor</h3>
+          {aiSettings.hasApiKey && (
+            <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Connected</span>
+          )}
+        </div>
+        <div className="p-4 space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">AI Provider</label>
+            <select
+              value={aiProvider}
+              onChange={e => setAiProvider(e.target.value as 'openai' | 'anthropic')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="openai">OpenAI (GPT-4o Mini)</option>
+              <option value="anthropic">Anthropic (Claude Haiku)</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              API Key {aiSettings.hasApiKey && <span className="text-green-600 text-xs">(key saved — enter new key to update)</span>}
+            </label>
+            <div className="relative">
+              <input
+                type={showApiKey ? 'text' : 'password'}
+                value={aiApiKey}
+                onChange={e => setAiApiKey(e.target.value)}
+                placeholder={aiSettings.hasApiKey ? '••••••••••••••••••••' : 'sk-... or sk-ant-...'}
+                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApiKey(!showApiKey)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">Your key is stored securely and never shared</p>
+          </div>
+          <button
+            onClick={handleSaveAIKey}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"
+          >
+            Save AI Settings
+          </button>
         </div>
       </div>
 

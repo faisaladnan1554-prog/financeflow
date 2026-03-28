@@ -1,6 +1,6 @@
 import type {
   User, Account, Category, Transaction, Budget, SavingsGoal,
-  Loan, CreditCard, RecurringBill, SplitExpense
+  Loan, CreditCard, RecurringBill, SplitExpense, Plan, AIStrategy
 } from '../types';
 
 // In production (Netlify drag-and-drop), set VITE_API_URL to your Render backend URL.
@@ -141,4 +141,33 @@ export const splitExpensesApi = {
   delete: (id: string) => req<{ success: boolean }>('DELETE', `/split-expenses/${id}`),
   markParticipantPaid: (id: string, participantId: string) =>
     req<SplitExpense>('POST', `/split-expenses/${id}/participant/${participantId}/pay`, {}),
+};
+
+// ── AI ─────────────────────────────────────────────────────────────────────
+export const aiApi = {
+  generateStrategy: (financialData: Record<string, unknown>) =>
+    req<AIStrategy>('POST', '/ai/strategy', { financialData }),
+  getSettings: () => req<{ aiProvider: string; hasApiKey: boolean }>('GET', '/ai/settings'),
+  updateSettings: (aiApiKey: string, aiProvider: string) =>
+    req<{ success: boolean }>('PUT', '/ai/settings', { aiApiKey, aiProvider }),
+};
+
+// ── Plans ──────────────────────────────────────────────────────────────────
+export const plansApi = {
+  getAll: () => req<{ plans: Plan[]; currentPlan: string; planExpiry: string | null }>('GET', '/plans'),
+  upgrade: (planId: string, paymentMethod: string, transactionRef?: string) =>
+    req<User>('POST', '/plans/upgrade', { planId, paymentMethod, transactionRef }),
+};
+
+// ── Payments ───────────────────────────────────────────────────────────────
+export const paymentsApi = {
+  initStripe: (planId: string, amount: number) =>
+    req<{ checkoutUrl: string; sessionId: string }>('POST', '/payments/stripe/checkout', { planId, amount }),
+  initJazzCash: (planId: string, amount: number) =>
+    req<{ postUrl: string; params: Record<string, string> }>('POST', '/payments/jazzcash', { planId, amount }),
+  initEasyPaisa: (planId: string, amount: number) =>
+    req<{ redirectUrl: string; params: Record<string, string> }>('POST', '/payments/easypaisa', { planId, amount }),
+  manualPayment: (planId: string, transactionRef: string, method: string) =>
+    req<User>('POST', '/payments/manual', { planId, transactionRef, method }),
+  getHistory: () => req<Array<{ date: string; amount: number; plan: string; method: string; ref: string }>>('GET', '/payments/history'),
 };

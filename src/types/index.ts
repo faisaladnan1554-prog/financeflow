@@ -8,6 +8,38 @@ export interface User {
   currency: string;
   language: string;
   fiscalMonthStart: number;
+  plan?: 'free' | 'basic' | 'pro' | 'enterprise';
+  planExpiry?: string;
+  aiProvider?: 'openai' | 'anthropic';
+  hasApiKey?: boolean;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  period: string;
+  features: string[];
+  limits: { accounts: number; transactionsPerMonth: number; aiAccess: boolean };
+  popular?: boolean;
+}
+
+export interface AIStrategy {
+  healthScore: number;
+  healthLabel: string;
+  healthColor: string;
+  bankruptcyRisk: 'low' | 'medium' | 'high' | 'critical';
+  bankruptcyRiskLabel: string;
+  savingsRate: number;
+  monthsToFreedom: number;
+  freedomDate: string;
+  monthlyTarget: number;
+  motivationalMessage: string;
+  summary: string;
+  budgetRecommendations: Array<{ category: string; current: number; recommended: number; action: string }>;
+  actionItems: Array<{ priority: string; title: string; description: string; impact: string }>;
+  projections: Array<{ month: string; income: number; expenses: number; savings: number; cumulative: number }>;
 }
 
 export interface Account {

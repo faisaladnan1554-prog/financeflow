@@ -20,6 +20,8 @@ const RecurringBills = lazy(() => import('./pages/RecurringBills'));
 const SplitExpenses = lazy(() => import('./pages/SplitExpenses'));
 const Settings = lazy(() => import('./pages/Settings'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
+const AIStrategy = lazy(() => import('./pages/AIStrategy'));
+const Pricing = lazy(() => import('./pages/Pricing'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PAGE_TITLES: Record<string, string> = {
@@ -35,6 +37,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/recurring-bills': 'Recurring Bills',
   '/split-expenses': 'Split Expenses',
   '/users': 'User Management',
+  '/ai-strategy': 'AI Financial Advisor',
+  '/pricing': 'Pricing & Plans',
   '/settings': 'Settings',
 };
 
@@ -83,6 +87,8 @@ function AppLayout() {
                 <Route path="/recurring-bills" component={RecurringBills} />
                 <Route path="/split-expenses" component={SplitExpenses} />
                 <Route path="/users" component={UserManagement} />
+                <Route path="/ai-strategy" component={AIStrategy} />
+                <Route path="/pricing" component={Pricing} />
                 <Route path="/settings" component={Settings} />
                 <Route component={NotFound} />
               </Switch>
