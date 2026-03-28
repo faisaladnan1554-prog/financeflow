@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-  userId:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', index: true },
   type:        { type: String, enum: ['income','expense','transfer'], required: true },
   amount:      { type: Number, required: true, min: 0 },
   date:        { type: String, required: true },   // YYYY-MM-DD string

@@ -40,6 +40,9 @@ app.use('/api/admin',           require('./routes/admin'));
 app.use('/api/ai',              require('./routes/ai'));
 app.use('/api/plans',           require('./routes/plans'));
 app.use('/api/payments',        require('./routes/payments'));
+app.use('/api/orgs',            require('./routes/organizations'));
+app.use('/api/org-settings',    require('./routes/orgSettings'));
+app.use('/api/subscriptions',   require('./routes/subscriptions'));
 
 // Health check
 app.get('/api/health', (req, res) => {

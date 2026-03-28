@@ -9,6 +9,7 @@ const paymentSchema = new mongoose.Schema({
 
 const loanSchema = new mongoose.Schema({
   userId:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId:  { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', index: true },
   direction:       { type: String, enum: ['given','taken'], required: true },
   personName:      { type: String, required: true },
   amount:          { type: Number, required: true, min: 0 },

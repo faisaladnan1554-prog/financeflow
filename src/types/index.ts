@@ -1,3 +1,46 @@
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  ownerId: string;
+  plan: 'free' | 'basic' | 'pro' | 'enterprise';
+  planExpiry: string | null;
+  createdAt: string;
+}
+
+export interface OrgMember {
+  id: string;
+  organizationId: string;
+  userId: string | { _id: string; name: string; email: string; createdAt: string };
+  role: 'owner' | 'admin' | 'member';
+  joinedAt: string;
+}
+
+export interface OrgSettings {
+  id: string;
+  organizationId: string;
+  appName: string;
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  mode: 'light' | 'dark';
+  currency: string;
+}
+
+export interface Subscription {
+  id: string;
+  organizationId: string;
+  planId: string;
+  status: 'active' | 'expired' | 'trial' | 'cancelled';
+  startDate: string;
+  endDate: string | null;
+  paymentMethod: string;
+  transactionRef: string;
+  amount: number;
+  currency: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -12,6 +55,10 @@ export interface User {
   planExpiry?: string;
   aiProvider?: 'openai' | 'anthropic';
   hasApiKey?: boolean;
+  organization?: Organization;
+  orgSettings?: OrgSettings;
+  orgRole?: 'owner' | 'admin' | 'member';
+  currentOrgId?: string;
 }
 
 export interface Plan {

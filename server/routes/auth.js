@@ -4,6 +4,9 @@ const router = express.Router();
 const User = require('../models/User');
 const Category = require('../models/Category');
 const auth = require('../middleware/auth');
+const Organization = require('../models/Organization');
+const OrgMember = require('../models/OrgMember');
+const OrgSettings = require('../models/OrgSettings');
 
 const DEFAULT_CATEGORIES = [
   { name: 'Salary',        type: 'income',  icon: '💼', color: '#10B981', isDefault: true },
@@ -44,6 +47,14 @@ router.post('/register', async (req, res) => {
     // Create default categories for this user
     await Category.insertMany(DEFAULT_CATEGORIES.map(c => ({ ...c, userId: user._id })));
 
+    // Create personal workspace
+    const slug = `${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}`;
+    const org = await Organization.create({ name: `${name}'s Workspace`, slug, ownerId: user._id, plan: 'free' });
+    await OrgMember.create({ organizationId: org._id, userId: user._id, role: 'owner' });
+    await OrgSettings.create({ organizationId: org._id, currency: 'PKR' });
+    user.currentOrgId = org._id;
+    await user.save();
+
     const token = signToken(user._id);
     res.status(201).json({ token, user });
   } catch (err) {
@@ -76,7 +87,15 @@ router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
+    const org = user.currentOrgId ? await Organization.findById(user.currentOrgId) : null;
+    const orgSettings = org ? await OrgSettings.findOne({ organizationId: org._id }) : null;
+    const membership = org ? await OrgMember.findOne({ organizationId: org._id, userId: user._id }) : null;
+    res.json({
+      ...user.toJSON(),
+      organization: org ? org.toJSON() : null,
+      orgSettings: orgSettings ? orgSettings.toJSON() : null,
+      orgRole: membership?.role ?? 'owner',
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

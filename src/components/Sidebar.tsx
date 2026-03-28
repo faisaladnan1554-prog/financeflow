@@ -2,9 +2,11 @@ import { Link, useRoute } from 'wouter';
 import {
   LayoutDashboard, Wallet, ArrowLeftRight, Tag, Target,
   CreditCard, TrendingUp, BarChart2, Users2,
-  Settings, HandCoins, Receipt, X, UserCog, Sparkles, Zap
+  Settings, HandCoins, Receipt, X, UserCog, Sparkles, Zap,
+  Building2, Palette
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useOrg } from '../contexts/OrgContext';
 
 interface NavItem {
   path: string;
@@ -27,6 +29,8 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/split-expenses',  label: 'Split Expenses',  icon: Users2 },
   { path: '/ai-strategy',     label: 'AI Advisor',      icon: Sparkles, dividerBefore: true },
   { path: '/pricing',         label: 'Pricing & Plans', icon: Zap },
+  { path: '/organization',    label: 'Workspace',       icon: Building2, dividerBefore: true },
+  { path: '/white-label',     label: 'White Label',     icon: Palette },
   { path: '/users',           label: 'User Management', icon: UserCog, dividerBefore: true },
   { path: '/settings',        label: 'Settings',        icon: Settings },
 ];
@@ -55,6 +59,7 @@ function NavLink({ item, onClick }: { item: NavItem; onClick?: () => void }) {
 }
 
 export function Sidebar({ open, onClose }: SidebarProps) {
+  const { org } = useOrg();
   return (
     <>
       {/* Mobile overlay */}
@@ -85,6 +90,21 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           >
             <X size={20} />
           </button>
+        </div>
+
+        {/* Org info */}
+        <div className="px-3 py-2 mb-2">
+          <div className="bg-gray-50 rounded-lg px-3 py-2">
+            <p className="text-xs font-semibold text-gray-700 truncate">{org?.name ?? 'My Workspace'}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                org?.plan === 'pro' ? 'bg-purple-100 text-purple-700' :
+                org?.plan === 'basic' ? 'bg-blue-100 text-blue-700' :
+                org?.plan === 'enterprise' ? 'bg-amber-100 text-amber-700' :
+                'bg-gray-200 text-gray-600'
+              }`}>{(org?.plan ?? 'free').toUpperCase()}</span>
+            </div>
+          </div>
         </div>
 
         {/* Nav */}

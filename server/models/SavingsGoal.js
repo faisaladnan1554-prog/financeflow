@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 
 const savingsGoalSchema = new mongoose.Schema({
-  userId:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', index: true },
   name:          { type: String, required: true },
   targetAmount:  { type: Number, required: true, min: 0 },
   currentAmount: { type: Number, default: 0 },

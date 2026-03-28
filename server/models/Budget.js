@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const budgetSchema = new mongoose.Schema({
   userId:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', index: true },
   categoryId:     { type: String, required: true },
   monthlyLimit:   { type: Number, required: true, min: 0 },
   spent:          { type: Number, default: 0 },

@@ -1,6 +1,7 @@
 import type {
   User, Account, Category, Transaction, Budget, SavingsGoal,
-  Loan, CreditCard, RecurringBill, SplitExpense, Plan, AIStrategy
+  Loan, CreditCard, RecurringBill, SplitExpense, Plan, AIStrategy,
+  Organization, OrgMember, OrgSettings, Subscription
 } from '../types';
 
 // In production (Netlify drag-and-drop), set VITE_API_URL to your Render backend URL.
@@ -170,4 +171,34 @@ export const paymentsApi = {
   manualPayment: (planId: string, transactionRef: string, method: string) =>
     req<User>('POST', '/payments/manual', { planId, transactionRef, method }),
   getHistory: () => req<Array<{ date: string; amount: number; plan: string; method: string; ref: string }>>('GET', '/payments/history'),
+};
+
+// ── Organizations ──────────────────────────────────────────────────────────
+export const orgApi = {
+  list: () => req<(Organization & { role: string })[]>('GET', '/orgs'),
+  getCurrent: () => req<{ org: Organization; members: OrgMember[]; settings: OrgSettings }>('GET', '/orgs/current'),
+  update: (name: string) => req<Organization>('PUT', '/orgs/current', { name }),
+  inviteMember: (email: string, role: string) =>
+    req<{ message: string }>('POST', '/orgs/invite', { email, role }),
+  changeMemberRole: (userId: string, role: string) =>
+    req<OrgMember>('PUT', `/orgs/members/${userId}/role`, { role }),
+  removeMember: (userId: string) =>
+    req<{ success: boolean }>('DELETE', `/orgs/members/${userId}`),
+  switchOrg: (orgId: string) =>
+    req<{ org: Organization; settings: OrgSettings; role: string }>('POST', `/orgs/switch/${orgId}`, {}),
+};
+
+// ── Org Settings (White-label) ─────────────────────────────────────────────
+export const orgSettingsApi = {
+  get: () => req<OrgSettings>('GET', '/org-settings'),
+  update: (settings: Partial<OrgSettings>) =>
+    req<OrgSettings>('PUT', '/org-settings', settings),
+};
+
+// ── Subscriptions ──────────────────────────────────────────────────────────
+export const subscriptionApi = {
+  getCurrent: () => req<{ subscription: Subscription | null; currentPlan: string; planExpiry: string | null }>('GET', '/subscriptions'),
+  getHistory: () => req<Subscription[]>('GET', '/subscriptions/history'),
+  upgrade: (planId: string, paymentMethod: string, transactionRef?: string) =>
+    req<{ success: boolean; plan: string; planExpiry: string }>('POST', '/subscriptions/upgrade', { planId, paymentMethod, transactionRef }),
 };

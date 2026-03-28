@@ -8,7 +8,8 @@ const billPaymentSchema = new mongoose.Schema({
 }, { _id: false });
 
 const recurringBillSchema = new mongoose.Schema({
-  userId:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', index: true },
   name:      { type: String, required: true },
   amount:    { type: Number, required: true, min: 0 },
   category:  { type: String, default: 'cat_utilities' },

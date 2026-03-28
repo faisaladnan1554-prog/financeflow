@@ -9,7 +9,8 @@ const participantSchema = new mongoose.Schema({
 }, { _id: false });
 
 const splitExpenseSchema = new mongoose.Schema({
-  userId:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', index: true },
   title:        { type: String, required: true },
   totalAmount:  { type: Number, required: true, min: 0 },
   date:         { type: String, required: true },

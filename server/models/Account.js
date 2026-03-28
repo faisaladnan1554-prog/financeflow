@@ -10,7 +10,8 @@ const toJSON = {
 };
 
 const accountSchema = new mongoose.Schema({
-  userId:   { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', index: true },
   name:     { type: String, required: true },
   type:     { type: String, enum: ['cash','checking','savings','mobile_wallet','investment'], default: 'cash' },
   balance:  { type: Number, default: 0 },

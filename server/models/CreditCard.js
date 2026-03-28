@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const creditCardSchema = new mongoose.Schema({
   userId:         { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', index: true },
   name:           { type: String, required: true },
   bank:           { type: String, default: '' },
   last4:          { type: String, default: '' },

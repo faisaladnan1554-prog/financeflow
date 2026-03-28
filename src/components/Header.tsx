@@ -1,7 +1,9 @@
-import { Menu, LogOut, ChevronDown } from 'lucide-react';
+import { Menu, LogOut, ChevronDown, Building2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useOrg } from '../contexts/OrgContext';
 import { getInitials } from '../lib/utils';
+import { useLocation } from 'wouter';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -10,6 +12,8 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, title }: HeaderProps) {
   const { user, logout } = useAuth();
+  const { org, orgSettings } = useOrg();
+  const [, navigate] = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +36,9 @@ export function Header({ onMenuClick, title }: HeaderProps) {
         >
           <Menu size={20} />
         </button>
-        <h1 className="text-base font-semibold text-gray-900">{title}</h1>
+        <h1 className="text-base font-semibold text-gray-900">
+          {title === 'FinanceFlow' && orgSettings?.appName ? orgSettings.appName : title}
+        </h1>
       </div>
 
       <div className="flex items-center gap-2">
@@ -53,11 +59,23 @@ export function Header({ onMenuClick, title }: HeaderProps) {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+            <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
               <div className="px-3 py-2 border-b border-gray-100">
                 <p className="text-sm font-medium text-gray-900">{user?.name}</p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
+              {org && (
+                <div className="px-3 py-1.5 border-b border-gray-100">
+                  <p className="text-xs text-gray-400 mb-1">Organization</p>
+                  <button
+                    onClick={() => { setDropdownOpen(false); navigate('/organization'); }}
+                    className="w-full flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <Building2 size={13} className="text-gray-400" />
+                    <span className="truncate">{org.name}</span>
+                  </button>
+                </div>
+              )}
               <button
                 onClick={() => { setDropdownOpen(false); logout(); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"

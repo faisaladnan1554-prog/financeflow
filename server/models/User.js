@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema({
   planExpiry:       { type: Date, default: null },
   aiApiKey:         { type: String, default: '' },
   aiProvider:       { type: String, enum: ['openai','anthropic'], default: 'openai' },
+  currentOrgId:     { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', default: null },
+  role:             { type: String, enum: ['owner','admin','member'], default: 'owner' },
 }, {
   timestamps: true,
   toJSON: {
@@ -21,6 +23,8 @@ const userSchema = new mongoose.Schema({
       ret.createdAt = ret.createdAt?.toISOString().split('T')[0];
       ret.loginTime = ret.loginTime?.toISOString();
       ret.planExpiry = ret.planExpiry ? ret.planExpiry.toISOString() : null;
+      ret.currentOrgId = ret.currentOrgId ? ret.currentOrgId.toString() : null;
+      // role is already a plain string, no transform needed
       delete ret._id; delete ret.__v; delete ret.password; delete ret.aiApiKey;
       return ret;
     }

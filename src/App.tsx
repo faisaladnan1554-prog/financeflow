@@ -3,6 +3,7 @@ import { Route, Switch, useLocation, Redirect } from 'wouter';
 import { Toaster } from 'sonner';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AppProvider } from './contexts/AppContext';
+import { OrgProvider } from './contexts/OrgContext';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 
@@ -22,6 +23,8 @@ const Settings = lazy(() => import('./pages/Settings'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
 const AIStrategy = lazy(() => import('./pages/AIStrategy'));
 const Pricing = lazy(() => import('./pages/Pricing'));
+const Organization = lazy(() => import('./pages/Organization'));
+const WhiteLabel = lazy(() => import('./pages/WhiteLabel'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PAGE_TITLES: Record<string, string> = {
@@ -39,6 +42,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/users': 'User Management',
   '/ai-strategy': 'AI Financial Advisor',
   '/pricing': 'Pricing & Plans',
+  '/organization': 'Workspace',
+  '/white-label': 'White Label',
   '/settings': 'Settings',
 };
 
@@ -66,6 +71,7 @@ function AppLayout() {
   const title = PAGE_TITLES[location] ?? 'FinanceFlow';
 
   return (
+    <OrgProvider>
     <AppProvider>
       <div className="flex h-screen bg-gray-50">
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
@@ -89,6 +95,8 @@ function AppLayout() {
                 <Route path="/users" component={UserManagement} />
                 <Route path="/ai-strategy" component={AIStrategy} />
                 <Route path="/pricing" component={Pricing} />
+                <Route path="/organization" component={Organization} />
+                <Route path="/white-label" component={WhiteLabel} />
                 <Route path="/settings" component={Settings} />
                 <Route component={NotFound} />
               </Switch>
@@ -97,6 +105,7 @@ function AppLayout() {
         </div>
       </div>
     </AppProvider>
+    </OrgProvider>
   );
 }
 
