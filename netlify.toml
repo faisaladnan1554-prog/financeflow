@@ -1,0 +1,11 @@
+# Netlify config for drag-and-drop / manual deploys
+# Upload the `dist/` folder to Netlify after running: npm run build
+
+[build]
+  publish = "dist"
+
+# SPA fallback — sends all routes to index.html so React Router works
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
