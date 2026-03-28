@@ -20,19 +20,19 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     if (mode === 'login') {
-      const ok = await login(email, password);
+      const { ok, error } = await login(email, password);
       if (ok) {
         setLocation('/dashboard');
       } else {
-        toast.error('Invalid email or password');
+        toast.error(error || 'Invalid email or password');
       }
     } else {
       if (!name.trim()) { toast.error('Name is required'); setLoading(false); return; }
-      const ok = await register(name, email, password);
+      const { ok, error } = await register(name, email, password);
       if (ok) {
         setLocation('/dashboard');
       } else {
-        toast.error('Email already in use');
+        toast.error(error || 'Registration failed. Please try again.');
       }
     }
     setLoading(false);

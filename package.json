@@ -19,6 +19,7 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^1.7.0",
+    "mongodb": "^7.1.1",
     "mongoose": "^8.5.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

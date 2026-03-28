@@ -5,8 +5,8 @@ import { authApi, tokenStore } from '../lib/api';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  register: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
 }
@@ -28,25 +28,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
     try {
       const { token, user: u } = await authApi.login(email, password);
       tokenStore.set(token);
       setUser(u);
-      return true;
-    } catch {
-      return false;
+      return { ok: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      return { ok: false, error: msg };
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+  const register = async (name: string, email: string, password: string): Promise<{ ok: boolean; error?: string }> => {
     try {
       const { token, user: u } = await authApi.register(name, email, password);
       tokenStore.set(token);
       setUser(u);
-      return true;
-    } catch {
-      return false;
+      return { ok: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+      return { ok: false, error: msg };
     }
   };
 
