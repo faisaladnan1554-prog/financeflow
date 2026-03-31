@@ -16,8 +16,9 @@ const recurringBillSchema = new mongoose.Schema({
   accountId: { type: String, default: '' },
   dueDay:    { type: Number, default: 1 },
   frequency: { type: String, enum: ['monthly','quarterly','yearly'], default: 'monthly' },
-  isActive:  { type: Boolean, default: true },
-  payments:  [billPaymentSchema],
+  isActive:   { type: Boolean, default: true },
+  entryType:  { type: String, enum: ['bill', 'income'], default: 'bill' },
+  payments:   [billPaymentSchema],
 }, {
   timestamps: true,
   toJSON: {

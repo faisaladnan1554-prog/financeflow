@@ -21,7 +21,7 @@ const emptyForm = (): TxForm => ({
   type: 'expense', amount: '', date: todayISO(), category: '', accountId: '', notes: '',
 });
 
-const PAGE_SIZE = 20;
+const PAGE_SIZES = [20, 50, 100];
 
 export default function Transactions() {
   const { data, addTransaction, updateTransaction, deleteTransaction, importTransactions } = useApp();
@@ -37,6 +37,7 @@ export default function Transactions() {
   const [filterAccount, setFilterAccount] = useState('');
   const [filterMonth, setFilterMonth] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [showImport, setShowImport] = useState(false);
   const [importResult, setImportResult] = useState<{ transactions: Transaction[]; errors: string[]; total: number; success: number } | null>(null);
   const [importAccountId, setImportAccountId] = useState('');
@@ -63,8 +64,20 @@ export default function Transactions() {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [data.transactions, data.categories, filterType, filterCategory, filterAccount, filterMonth, search]);
 
-  const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
-  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pageCount = Math.ceil(filtered.length / pageSize);
+  const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const startItem = filtered.length === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endItem = Math.min(page * pageSize, filtered.length);
+
+  // Build visible page numbers (max 5, centered around current page)
+  const getPageNumbers = () => {
+    const delta = 2;
+    const range: number[] = [];
+    for (let i = Math.max(1, page - delta); i <= Math.min(pageCount, page + delta); i++) {
+      range.push(i);
+    }
+    return range;
+  };
 
   const totalIncome = filtered.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
   const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
@@ -257,21 +270,57 @@ export default function Transactions() {
                 </tbody>
               </table>
             </div>
-            {pageCount > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-                <p className="text-xs text-gray-500">Page {page} of {pageCount}</p>
-                <div className="flex gap-1">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 flex-wrap gap-2">
+              {/* Left: showing info + page size */}
+              <div className="flex items-center gap-3">
+                <p className="text-xs text-gray-500">
+                  {filtered.length === 0 ? 'No results' : `Showing ${startItem}–${endItem} of ${filtered.length}`}
+                </p>
+                <select
+                  value={pageSize}
+                  onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
+                  className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-600 focus:outline-none"
+                >
+                  {PAGE_SIZES.map(s => <option key={s} value={s}>{s} / page</option>)}
+                </select>
+              </div>
+              {/* Right: page navigation */}
+              {pageCount > 1 && (
+                <div className="flex items-center gap-1">
+                  {/* First */}
+                  <button onClick={() => setPage(1)} disabled={page === 1}
+                    className="px-2 py-1 text-xs rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
+                    «
+                  </button>
+                  {/* Prev */}
                   <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
                     className="p-1.5 rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
-                    <ChevronLeft size={14} />
+                    <ChevronLeft size={13} />
                   </button>
+                  {/* Page numbers */}
+                  {getPageNumbers().map(n => (
+                    <button key={n} onClick={() => setPage(n)}
+                      className={`px-2.5 py-1 text-xs rounded border transition-colors ${
+                        n === page
+                          ? 'bg-blue-600 text-white border-blue-600'
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}>
+                      {n}
+                    </button>
+                  ))}
+                  {/* Next */}
                   <button onClick={() => setPage(p => Math.min(pageCount, p + 1))} disabled={page === pageCount}
                     className="p-1.5 rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
-                    <ChevronRight size={14} />
+                    <ChevronRight size={13} />
+                  </button>
+                  {/* Last */}
+                  <button onClick={() => setPage(pageCount)} disabled={page === pageCount}
+                    className="px-2 py-1 text-xs rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50">
+                    »
                   </button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </>
         )}
       </div>

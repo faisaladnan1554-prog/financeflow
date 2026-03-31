@@ -3,7 +3,7 @@ import { Link } from 'wouter';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend
 } from 'recharts';
-import { TrendingUp, TrendingDown, ArrowRight, Plus, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, Plus, AlertCircle, HandCoins } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
 import { formatCurrency, formatDate, getCurrentMonth, getLast6Months, getMonthLabel, getDaysUntil } from '../lib/utils';
@@ -69,6 +69,19 @@ export default function Dashboard() {
       daysLeft: getDaysUntil(new Date(today.getFullYear(), today.getMonth(), b.dueDay).toISOString().split('T')[0]),
     })).slice(0, 4);
   }, [data.recurringBills]);
+
+  // Loan repayment widget data
+  const loanRepayments = useMemo(() => {
+    const activeLoans = data.loans.filter(l => l.direction === 'taken' && l.status === 'active');
+    const paidThisMonth = activeLoans.reduce((sum, l) => {
+      const monthPaid = l.payments
+        .filter(p => p.date && p.date.startsWith(currentMonth))
+        .reduce((s, p) => s + p.amount, 0);
+      return sum + monthPaid;
+    }, 0);
+    const totalRemaining = activeLoans.reduce((sum, l) => sum + l.remainingAmount, 0);
+    return { activeLoans, paidThisMonth, totalRemaining, count: activeLoans.length };
+  }, [data.loans, currentMonth]);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -257,6 +270,78 @@ export default function Dashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Loan Repayments Widget */}
+          <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-1.5">
+                <HandCoins size={14} className="text-orange-500" />
+                <h3 className="text-sm font-semibold text-gray-900">Loan Repayments</h3>
+              </div>
+              <Link href="/loans" className="text-xs text-blue-600 hover:underline">View all</Link>
+            </div>
+
+            {loanRepayments.count === 0 ? (
+              <p className="text-xs text-gray-400 text-center py-2">No active loans</p>
+            ) : (
+              <div className="space-y-3">
+                {/* Summary row */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-orange-50 rounded-lg p-2 text-center">
+                    <p className="text-[10px] text-orange-600 font-medium">Total Remaining</p>
+                    <p className="text-sm font-bold text-orange-700">{formatCurrency(loanRepayments.totalRemaining, currency)}</p>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-2 text-center">
+                    <p className="text-[10px] text-green-600 font-medium">Paid This Month</p>
+                    <p className="text-sm font-bold text-green-700">{formatCurrency(loanRepayments.paidThisMonth, currency)}</p>
+                  </div>
+                </div>
+
+                {/* Individual loans */}
+                <div className="space-y-2">
+                  {loanRepayments.activeLoans.slice(0, 3).map(loan => {
+                    const paidThisLoan = loan.payments
+                      .filter(p => p.date?.startsWith(currentMonth))
+                      .reduce((s, p) => s + p.amount, 0);
+                    const progress = loan.amount > 0
+                      ? Math.round(((loan.amount - loan.remainingAmount) / loan.amount) * 100)
+                      : 0;
+                    return (
+                      <div key={loan.id}>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-xs font-medium text-gray-700 truncate max-w-[120px]">
+                            {loan.personName}
+                          </p>
+                          <span className="text-xs text-gray-500">{progress}% paid</span>
+                        </div>
+                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-orange-400 rounded-full transition-all"
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between mt-0.5">
+                          <p className="text-[10px] text-gray-400">
+                            Remaining: {formatCurrency(loan.remainingAmount, currency)}
+                          </p>
+                          {paidThisLoan > 0 && (
+                            <p className="text-[10px] text-green-600">
+                              +{formatCurrency(paidThisLoan, currency)} this month
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {loanRepayments.activeLoans.length > 3 && (
+                    <p className="text-xs text-gray-400 text-center">
+                      +{loanRepayments.activeLoans.length - 3} more loans
+                    </p>
+                  )}
+                </div>
               </div>
             )}
           </div>

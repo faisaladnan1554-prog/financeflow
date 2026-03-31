@@ -47,7 +47,9 @@ export default function Accounts() {
 
   const handleSave = () => {
     if (!form.name.trim()) { toast.error('Name is required'); return; }
-    const balance = parseFloat(form.balance) || 0;
+    // Allow negative balances (e.g. overdraft, loan accounts)
+    const balance = form.balance === '' ? 0 : parseFloat(form.balance);
+    if (isNaN(balance)) { toast.error('Enter a valid balance'); return; }
     if (editing) {
       updateAccount(editing.id, { name: form.name, type: form.type, balance, icon: form.icon, color: form.color });
       toast.success('Account updated');
@@ -71,7 +73,9 @@ export default function Accounts() {
     if (transfer.fromId === transfer.toId) { toast.error('Select different accounts'); return; }
     if (!amount || amount <= 0) { toast.error('Enter a valid amount'); return; }
     const from = data.accounts.find(a => a.id === transfer.fromId);
-    if (from && from.balance < amount) { toast.error('Insufficient balance'); return; }
+    if (from && from.balance < amount) {
+      if (!confirm(`Warning: "${from.name}" has insufficient balance (${formatCurrency(from.balance, currency)}). This will result in a negative balance. Continue?`)) return;
+    }
     transferBetweenAccounts(transfer.fromId, transfer.toId, amount, transfer.note || 'Transfer');
     toast.success('Transfer successful');
     setShowTransfer(false);
@@ -133,9 +137,13 @@ export default function Accounts() {
                   </button>
                 </div>
               </div>
-              <p className="text-2xl font-bold" style={{ color: acc.color }}>
+              <p className={`text-2xl font-bold ${acc.balance < 0 ? 'text-red-500' : ''}`}
+                style={acc.balance >= 0 ? { color: acc.color } : undefined}>
                 {formatCurrency(acc.balance, currency)}
               </p>
+              {acc.balance < 0 && (
+                <span className="text-xs text-red-500 bg-red-50 px-1.5 py-0.5 rounded mt-1 inline-block">Negative Balance</span>
+              )}
             </div>
           ))}
         </div>
@@ -179,8 +187,10 @@ export default function Accounts() {
               type="number"
               value={form.balance}
               onChange={e => setForm(f => ({ ...f, balance: e.target.value }))}
+              placeholder="0.00"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <p className="text-xs text-gray-400 mt-1">Negative values allowed (e.g. -5000 for overdraft)</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>

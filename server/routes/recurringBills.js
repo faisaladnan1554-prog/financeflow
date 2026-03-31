@@ -53,30 +53,33 @@ router.post('/:id/pay', auth, async (req, res) => {
     });
     await bill.save();
 
-    // Create a Transaction document for this bill payment
+    // Determine if this is an income or expense entry
+    const isIncome = bill.entryType === 'income';
+
+    // Create a Transaction document for this payment/receipt
     try {
       await Transaction.create({
         userId: req.userId,
-        type: 'expense',
+        type: isIncome ? 'income' : 'expense',
         amount: paidAmount,
         date: new Date().toISOString().split('T')[0],
         category: bill.category,
         accountId: bill.accountId,
-        notes: `${bill.name} - Recurring Bill`,
+        notes: `${bill.name} - ${isIncome ? 'Recurring Income' : 'Recurring Bill'}`,
       });
     } catch (txErr) {
-      console.error('Failed to create transaction for bill payment:', txErr.message);
+      console.error('Failed to create transaction:', txErr.message);
     }
 
-    // Deduct from account balance
+    // Update account balance: add for income, deduct for expense
     if (bill.accountId) {
       try {
         await Account.findOneAndUpdate(
           { _id: bill.accountId, userId: req.userId },
-          { $inc: { balance: -paidAmount } }
+          { $inc: { balance: isIncome ? paidAmount : -paidAmount } }
         );
       } catch (accErr) {
-        console.error('Failed to update account balance for bill payment:', accErr.message);
+        console.error('Failed to update account balance:', accErr.message);
       }
     }
 
