@@ -29,11 +29,15 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  const data = await res.json().catch(() => ({ error: 'Invalid response' }));
+  const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error((data as { error?: string }).error || `HTTP ${res.status}`);
+    const serverMsg = (data as { error?: string } | null)?.error;
+    if (res.status === 404) throw new Error('API route not found — please deploy the latest backend');
+    throw new Error(serverMsg || `Server error (HTTP ${res.status})`);
   }
+
+  if (data === null) throw new Error('Invalid response from server');
   return data as T;
 }
 
