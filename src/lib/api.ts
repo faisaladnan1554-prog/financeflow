@@ -183,6 +183,7 @@ export const scheduledEntriesApi = {
     req<ScheduledEntry>('PUT', `/scheduled-entries/${id}`, data),
   delete: (id: string) => req<{ success: boolean }>('DELETE', `/scheduled-entries/${id}`),
   apply: () => req<{ applied: number; transactions: Transaction[] }>('POST', '/scheduled-entries/apply', {}),
+  applyOne: (id: string) => req<{ entry: ScheduledEntry; transaction: Transaction }>('POST', `/scheduled-entries/${id}/apply`, {}),
 };
 
 // ── Organizations ──────────────────────────────────────────────────────────

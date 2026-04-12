@@ -94,4 +94,38 @@ router.post('/apply', auth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// POST /:id/apply  — manually apply a single entry
+router.post('/:id/apply', auth, async (req, res) => {
+  try {
+    const entry = await ScheduledEntry.findOne({ _id: req.params.id, userId: req.userId });
+    if (!entry) return res.status(404).json({ error: 'Not found' });
+    if (entry.status !== 'pending') return res.status(400).json({ error: 'Entry is already applied or cancelled' });
+
+    const mongoose = require('mongoose');
+    const userObjId = mongoose.Types.ObjectId.createFromHexString(req.userId);
+
+    const tx = new Transaction({
+      userId:         userObjId,
+      organizationId: entry.organizationId,
+      type:           entry.type,
+      amount:         entry.amount,
+      category:       entry.categoryId || (entry.type === 'income' ? 'cat_salary' : 'cat_other'),
+      accountId:      entry.accountId,
+      date:           entry.date,
+      description:    entry.title + (entry.notes ? ` — ${entry.notes}` : ''),
+      notes:          entry.notes || '',
+    });
+    await tx.save();
+
+    const delta = entry.type === 'income' ? entry.amount : -entry.amount;
+    await Account.findByIdAndUpdate(entry.accountId, { $inc: { balance: delta } });
+
+    entry.status = 'applied';
+    entry.transactionId = tx._id.toString();
+    await entry.save();
+
+    res.json({ entry, transaction: tx });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
