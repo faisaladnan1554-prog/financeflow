@@ -81,8 +81,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      // Auto-apply any pending scheduled entries that are due
-      scheduledEntriesApi.apply().catch(() => {}); // silent — runs in background
+      // Auto-apply any pending scheduled entries that are due (silent)
+      scheduledEntriesApi.apply().catch(() => {});
 
       const [accounts, categories, transactions, budgets, savingsGoals, loans, creditCards, recurringBills, splitExpenses, scheduledEntries] =
         await Promise.all([
@@ -95,7 +95,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           creditCardsApi.getAll(),
           recurringBillsApi.getAll(),
           splitExpensesApi.getAll(),
-          scheduledEntriesApi.getAll(),
+          // Graceful fallback — returns [] if backend route not yet deployed
+          scheduledEntriesApi.getAll().catch(() => [] as import('../types').ScheduledEntry[]),
         ]);
       setData(prev => ({ ...prev, accounts, categories, transactions, budgets, savingsGoals, loans, creditCards, recurringBills, splitExpenses, scheduledEntries }));
     } catch (err) {
