@@ -44,6 +44,7 @@ export default function ScheduledEntries() {
   const [form, setForm] = useState<EntryForm>(EMPTY_FORM);
   const [filterStatus, setFilterStatus] = useState<'all' | ScheduledEntry['status']>('all');
   const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -75,27 +76,34 @@ export default function ScheduledEntries() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     const amount = parseFloat(form.amount);
     if (!amount || amount <= 0) { toast.error('Enter a valid amount'); return; }
     if (!form.date) { toast.error('Date is required'); return; }
     if (!form.accountId) { toast.error('Select an account'); return; }
 
-    if (editing) {
-      updateScheduledEntry(editing.id, {
-        title: form.title.trim(), amount, date: form.date,
-        accountId: form.accountId, categoryId: form.categoryId, notes: form.notes.trim(),
-      });
-      toast.success('Entry updated');
-    } else {
-      addScheduledEntry({
-        type: tab, title: form.title.trim(), amount, date: form.date,
-        accountId: form.accountId, categoryId: form.categoryId, notes: form.notes.trim(),
-      });
-      toast.success(`Upcoming ${tab} scheduled`);
+    setSaving(true);
+    try {
+      if (editing) {
+        await updateScheduledEntry(editing.id, {
+          title: form.title.trim(), amount, date: form.date,
+          accountId: form.accountId, categoryId: form.categoryId, notes: form.notes.trim(),
+        });
+        toast.success('Entry updated');
+      } else {
+        await addScheduledEntry({
+          type: tab, title: form.title.trim(), amount, date: form.date,
+          accountId: form.accountId, categoryId: form.categoryId, notes: form.notes.trim(),
+        });
+        toast.success(`Upcoming ${tab} scheduled`);
+      }
+      setShowModal(false);
+    } catch {
+      // error already shown by AppContext
+    } finally {
+      setSaving(false);
     }
-    setShowModal(false);
   };
 
   // Manually apply a single entry → creates real transaction immediately
@@ -401,11 +409,13 @@ export default function ScheduledEntries() {
           </div>
 
           <div className="flex gap-2 pt-1">
-            <button onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+            <button onClick={() => setShowModal(false)} disabled={saving} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50">Cancel</button>
             <button
               onClick={handleSave}
-              className={`flex-1 px-4 py-2 text-white rounded-lg text-sm ${tab === 'income' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+              disabled={saving}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-white rounded-lg text-sm disabled:opacity-60 ${tab === 'income' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
             >
+              {saving && <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
               {editing ? 'Update' : 'Schedule'} {tab === 'income' ? 'Income' : 'Expense'}
             </button>
           </div>

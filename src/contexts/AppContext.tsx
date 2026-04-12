@@ -57,9 +57,9 @@ interface AppContextType {
   deleteSplit: (id: string) => void;
   markParticipantPaid: (splitId: string, participantId: string) => void;
   // Scheduled Entries
-  addScheduledEntry: (e: Omit<ScheduledEntry, 'id' | 'createdAt' | 'status' | 'transactionId'>) => void;
-  updateScheduledEntry: (id: string, e: Partial<ScheduledEntry>) => void;
-  deleteScheduledEntry: (id: string) => void;
+  addScheduledEntry: (e: Omit<ScheduledEntry, 'id' | 'createdAt' | 'status' | 'transactionId'>) => Promise<void>;
+  updateScheduledEntry: (id: string, e: Partial<ScheduledEntry>) => Promise<void>;
+  deleteScheduledEntry: (id: string) => Promise<void>;
   // Utils
   getMonthlyBudgetSpent: (categoryId: string, month: string) => number;
 }
@@ -427,20 +427,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   // ── Scheduled Entries ─────────────────────────────────────────────────────
-  const addScheduledEntry = (e: Omit<ScheduledEntry, 'id' | 'createdAt' | 'status' | 'transactionId'>) => {
-    const tempId = generateId();
-    const temp: ScheduledEntry = { ...e, id: tempId, status: 'pending', transactionId: '', createdAt: todayISO() };
-    optimisticAdd('scheduledEntries', temp, () => scheduledEntriesApi.create(e), tempId);
+  const addScheduledEntry = async (e: Omit<ScheduledEntry, 'id' | 'createdAt' | 'status' | 'transactionId'>) => {
+    try {
+      const saved = await scheduledEntriesApi.create(e);
+      setData(prev => ({ ...prev, scheduledEntries: [...prev.scheduledEntries, saved] }));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save entry';
+      toast.error(msg);
+      throw err; // re-throw so page can react
+    }
   };
 
-  const updateScheduledEntry = (id: string, e: Partial<ScheduledEntry>) => {
-    const prev = data.scheduledEntries.find(x => x.id === id)!;
-    optimisticUpdate('scheduledEntries', id, e, () => scheduledEntriesApi.update(id, e), prev);
+  const updateScheduledEntry = async (id: string, e: Partial<ScheduledEntry>) => {
+    try {
+      const saved = await scheduledEntriesApi.update(id, e);
+      setData(prev => ({ ...prev, scheduledEntries: prev.scheduledEntries.map(x => x.id === id ? saved : x) }));
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update entry';
+      toast.error(msg);
+    }
   };
 
-  const deleteScheduledEntry = (id: string) => {
-    const removed = data.scheduledEntries.find(x => x.id === id)!;
-    optimisticDelete('scheduledEntries', id, () => scheduledEntriesApi.delete(id), removed);
+  const deleteScheduledEntry = async (id: string) => {
+    setData(prev => ({ ...prev, scheduledEntries: prev.scheduledEntries.filter(x => x.id !== id) }));
+    try {
+      await scheduledEntriesApi.delete(id);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to delete entry';
+      toast.error(msg);
+      // reload to restore the deleted item
+      scheduledEntriesApi.getAll().then(scheduledEntries =>
+        setData(prev => ({ ...prev, scheduledEntries }))
+      ).catch(() => {});
+    }
   };
 
   // ── Util ──────────────────────────────────────────────────────────────────
