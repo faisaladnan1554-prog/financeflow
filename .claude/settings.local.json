@@ -5,7 +5,8 @@
       "Bash(npm install:*)",
       "Bash(npm run:*)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(dir /s /b *.js)"
+      "Bash(dir /s /b *.js)",
+      "Bash(ls \"D:\\\\claude\\\\expense management\\\\server\\\\models\"\" && ls \"D:claudeexpense managementserverroutes\"\")"
     ]
   }
 }

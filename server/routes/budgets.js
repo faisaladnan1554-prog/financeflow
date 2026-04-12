@@ -45,4 +45,52 @@ router.delete('/:id', auth, async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Auto-rollover recurring budgets into the given month
+router.post('/rollover', auth, async (req, res) => {
+  try {
+    const { month } = req.body; // e.g. "2026-03"
+    if (!month) return res.status(400).json({ error: 'month is required' });
+
+    // Find all recurring budgets for this user (any month)
+    const recurringBudgets = await Budget.find({ userId: req.userId, recurring: true });
+
+    // Find which categoryIds already have a budget for the target month
+    const existing = await Budget.find({ userId: req.userId, month });
+    const existingCatIds = new Set(existing.map(b => b.categoryId));
+
+    const created = [];
+    for (const b of recurringBudgets) {
+      if (existingCatIds.has(b.categoryId)) continue; // already exists for this month
+
+      // Calculate spent for this category in the target month
+      const result = await Transaction.aggregate([
+        {
+          $match: {
+            userId: require('mongoose').Types.ObjectId.createFromHexString(req.userId),
+            type: 'expense',
+            category: b.categoryId,
+            date: { $regex: `^${month}` },
+          }
+        },
+        { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]);
+      const spent = result[0]?.total || 0;
+
+      const newBudget = new Budget({
+        userId: req.userId,
+        categoryId: b.categoryId,
+        monthlyLimit: b.monthlyLimit,
+        alertThreshold: b.alertThreshold,
+        recurring: true,
+        month,
+        spent,
+      });
+      await newBudget.save();
+      created.push(newBudget);
+    }
+
+    res.json({ created: created.length, budgets: created });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;

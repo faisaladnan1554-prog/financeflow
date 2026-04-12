@@ -18,6 +18,7 @@ const CreditCards = lazy(() => import('./pages/CreditCards'));
 const CashFlow = lazy(() => import('./pages/CashFlow'));
 const Reports = lazy(() => import('./pages/Reports'));
 const RecurringBills = lazy(() => import('./pages/RecurringBills'));
+const ScheduledEntries = lazy(() => import('./pages/ScheduledEntries'));
 const SplitExpenses = lazy(() => import('./pages/SplitExpenses'));
 const Settings = lazy(() => import('./pages/Settings'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
@@ -38,6 +39,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/cash-flow': 'Cash Flow',
   '/reports': 'Reports',
   '/recurring-bills': 'Recurring Bills',
+  '/scheduled-entries': 'Scheduled Entries',
   '/split-expenses': 'Split Expenses',
   '/users': 'User Management',
   '/ai-strategy': 'AI Financial Advisor',
@@ -91,6 +93,7 @@ function AppLayout() {
                 <Route path="/cash-flow" component={CashFlow} />
                 <Route path="/reports" component={Reports} />
                 <Route path="/recurring-bills" component={RecurringBills} />
+                <Route path="/scheduled-entries" component={ScheduledEntries} />
                 <Route path="/split-expenses" component={SplitExpenses} />
                 <Route path="/users" component={UserManagement} />
                 <Route path="/ai-strategy" component={AIStrategy} />

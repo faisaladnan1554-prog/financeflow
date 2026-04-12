@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import type { AppData, Account, Category, Transaction, Budget, SavingsGoal, RecurringTransaction, Loan, CreditCard, RecurringBill, SplitExpense } from '../types';
+import type { AppData, Account, Category, Transaction, Budget, SavingsGoal, RecurringTransaction, Loan, CreditCard, RecurringBill, SplitExpense, ScheduledEntry } from '../types';
 import {
   accountsApi, categoriesApi, transactionsApi, budgetsApi, goalsApi,
-  loansApi, creditCardsApi, recurringBillsApi, splitExpensesApi,
+  loansApi, creditCardsApi, recurringBillsApi, splitExpensesApi, scheduledEntriesApi,
 } from '../lib/api';
 import { generateId, todayISO, getCurrentMonth } from '../lib/utils';
 import { toast } from 'sonner';
@@ -56,6 +56,10 @@ interface AppContextType {
   updateSplit: (id: string, s: Partial<SplitExpense>) => void;
   deleteSplit: (id: string) => void;
   markParticipantPaid: (splitId: string, participantId: string) => void;
+  // Scheduled Entries
+  addScheduledEntry: (e: Omit<ScheduledEntry, 'id' | 'createdAt' | 'status' | 'transactionId'>) => void;
+  updateScheduledEntry: (id: string, e: Partial<ScheduledEntry>) => void;
+  deleteScheduledEntry: (id: string) => void;
   // Utils
   getMonthlyBudgetSpent: (categoryId: string, month: string) => number;
 }
@@ -64,6 +68,7 @@ const EMPTY_DATA: AppData = {
   users: [], accounts: [], categories: [], transactions: [],
   budgets: [], savingsGoals: [], recurringTransactions: [],
   loans: [], creditCards: [], recurringBills: [], splitExpenses: [],
+  scheduledEntries: [],
 };
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -76,7 +81,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const [accounts, categories, transactions, budgets, savingsGoals, loans, creditCards, recurringBills, splitExpenses] =
+      // Auto-apply any pending scheduled entries that are due
+      scheduledEntriesApi.apply().catch(() => {}); // silent — runs in background
+
+      const [accounts, categories, transactions, budgets, savingsGoals, loans, creditCards, recurringBills, splitExpenses, scheduledEntries] =
         await Promise.all([
           accountsApi.getAll(),
           categoriesApi.getAll(),
@@ -87,8 +95,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           creditCardsApi.getAll(),
           recurringBillsApi.getAll(),
           splitExpensesApi.getAll(),
+          scheduledEntriesApi.getAll(),
         ]);
-      setData(prev => ({ ...prev, accounts, categories, transactions, budgets, savingsGoals, loans, creditCards, recurringBills, splitExpenses }));
+      setData(prev => ({ ...prev, accounts, categories, transactions, budgets, savingsGoals, loans, creditCards, recurringBills, splitExpenses, scheduledEntries }));
     } catch (err) {
       toast.error('Failed to load data from server');
     } finally {
@@ -416,6 +425,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }).catch(() => toast.error('Mark paid failed'));
   };
 
+  // ── Scheduled Entries ─────────────────────────────────────────────────────
+  const addScheduledEntry = (e: Omit<ScheduledEntry, 'id' | 'createdAt' | 'status' | 'transactionId'>) => {
+    const tempId = generateId();
+    const temp: ScheduledEntry = { ...e, id: tempId, status: 'pending', transactionId: '', createdAt: todayISO() };
+    optimisticAdd('scheduledEntries', temp, () => scheduledEntriesApi.create(e), tempId);
+  };
+
+  const updateScheduledEntry = (id: string, e: Partial<ScheduledEntry>) => {
+    const prev = data.scheduledEntries.find(x => x.id === id)!;
+    optimisticUpdate('scheduledEntries', id, e, () => scheduledEntriesApi.update(id, e), prev);
+  };
+
+  const deleteScheduledEntry = (id: string) => {
+    const removed = data.scheduledEntries.find(x => x.id === id)!;
+    optimisticDelete('scheduledEntries', id, () => scheduledEntriesApi.delete(id), removed);
+  };
+
   // ── Util ──────────────────────────────────────────────────────────────────
   const getMonthlyBudgetSpent = (categoryId: string, month: string): number =>
     data.transactions
@@ -435,6 +461,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addCreditCard, updateCreditCard, deleteCreditCard,
       addBill, updateBill, deleteBill, markBillPaid,
       addSplit, updateSplit, deleteSplit, markParticipantPaid,
+      addScheduledEntry, updateScheduledEntry, deleteScheduledEntry,
       getMonthlyBudgetSpent,
     }}>
       {children}

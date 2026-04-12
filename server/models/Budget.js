@@ -8,6 +8,7 @@ const budgetSchema = new mongoose.Schema({
   spent:          { type: Number, default: 0 },
   month:          { type: String, required: true },   // YYYY-MM
   alertThreshold: { type: Number, default: 80 },
+  recurring:      { type: Boolean, default: false },
 }, {
   timestamps: true,
   toJSON: {

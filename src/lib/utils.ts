@@ -9,7 +9,8 @@ export function formatCurrency(amount: number, currency = 'PKR'): string {
     SAR: 'SAR ',
   };
   const symbol = symbols[currency] ?? currency + ' ';
-  return `${symbol}${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  const negative = amount < 0;
+  return `${negative ? '-' : ''}${symbol}${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
 export function formatDate(dateStr: string): string {

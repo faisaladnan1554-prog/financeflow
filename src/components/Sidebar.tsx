@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Wallet, ArrowLeftRight, Tag, Target,
   CreditCard, TrendingUp, BarChart2, Users2,
   Settings, HandCoins, Receipt, X, UserCog, Sparkles, Zap,
-  Building2, Palette
+  Building2, Palette, CalendarClock
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useOrg } from '../contexts/OrgContext';
@@ -25,8 +25,9 @@ const NAV_ITEMS: NavItem[] = [
   { path: '/credit-cards',    label: 'Credit Cards',    icon: CreditCard },
   { path: '/cash-flow',       label: 'Cash Flow',       icon: TrendingUp },
   { path: '/reports',         label: 'Reports',         icon: BarChart2 },
-  { path: '/recurring-bills', label: 'Recurring Bills', icon: Receipt },
-  { path: '/split-expenses',  label: 'Split Expenses',  icon: Users2 },
+  { path: '/recurring-bills',   label: 'Recurring Bills',    icon: Receipt },
+  { path: '/scheduled-entries', label: 'Scheduled Entries',  icon: CalendarClock },
+  { path: '/split-expenses',    label: 'Split Expenses',     icon: Users2 },
   { path: '/ai-strategy',     label: 'AI Advisor',      icon: Sparkles, dividerBefore: true },
   { path: '/pricing',         label: 'Pricing & Plans', icon: Zap },
   { path: '/organization',    label: 'Workspace',       icon: Building2, dividerBefore: true },

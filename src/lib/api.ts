@@ -1,7 +1,7 @@
 import type {
   User, Account, Category, Transaction, Budget, SavingsGoal,
   Loan, CreditCard, RecurringBill, SplitExpense, Plan, AIStrategy,
-  Organization, OrgMember, OrgSettings, Subscription
+  Organization, OrgMember, OrgSettings, Subscription, ScheduledEntry
 } from '../types';
 
 // In production (Netlify drag-and-drop), set VITE_API_URL to your Render backend URL.
@@ -85,6 +85,7 @@ export const budgetsApi = {
   create: (data: Omit<Budget, 'id' | 'createdAt' | 'spent'>) => req<Budget>('POST', '/budgets', data),
   update: (id: string, data: Partial<Budget>) => req<Budget>('PUT', `/budgets/${id}`, data),
   delete: (id: string) => req<{ success: boolean }>('DELETE', `/budgets/${id}`),
+  rollover: (month: string) => req<{ created: number; budgets: Budget[] }>('POST', '/budgets/rollover', { month }),
 };
 
 // ── Savings Goals ──────────────────────────────────────────────────────────
@@ -171,6 +172,17 @@ export const paymentsApi = {
   manualPayment: (planId: string, transactionRef: string, method: string) =>
     req<User>('POST', '/payments/manual', { planId, transactionRef, method }),
   getHistory: () => req<Array<{ date: string; amount: number; plan: string; method: string; ref: string }>>('GET', '/payments/history'),
+};
+
+// ── Scheduled Entries ──────────────────────────────────────────────────────
+export const scheduledEntriesApi = {
+  getAll: () => req<ScheduledEntry[]>('GET', '/scheduled-entries'),
+  create: (data: Omit<ScheduledEntry, 'id' | 'createdAt' | 'status' | 'transactionId'>) =>
+    req<ScheduledEntry>('POST', '/scheduled-entries', data),
+  update: (id: string, data: Partial<ScheduledEntry>) =>
+    req<ScheduledEntry>('PUT', `/scheduled-entries/${id}`, data),
+  delete: (id: string) => req<{ success: boolean }>('DELETE', `/scheduled-entries/${id}`),
+  apply: () => req<{ applied: number; transactions: Transaction[] }>('POST', '/scheduled-entries/apply', {}),
 };
 
 // ── Organizations ──────────────────────────────────────────────────────────

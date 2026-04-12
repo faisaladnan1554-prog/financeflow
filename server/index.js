@@ -43,6 +43,7 @@ app.use('/api/payments',        require('./routes/payments'));
 app.use('/api/orgs',            require('./routes/organizations'));
 app.use('/api/org-settings',    require('./routes/orgSettings'));
 app.use('/api/subscriptions',   require('./routes/subscriptions'));
+app.use('/api/scheduled-entries', require('./routes/scheduledEntries'));
 
 // Health check
 app.get('/api/health', (req, res) => {

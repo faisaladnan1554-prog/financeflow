@@ -131,6 +131,7 @@ export interface Budget {
   spent: number;
   month: string;
   alertThreshold: number;
+  recurring?: boolean;
   createdAt: string;
 }
 
@@ -235,6 +236,20 @@ export interface SplitParticipant {
   paidDate?: string;
 }
 
+export interface ScheduledEntry {
+  id: string;
+  type: 'income' | 'expense';
+  title: string;
+  amount: number;
+  date: string;          // YYYY-MM-DD
+  accountId: string;
+  categoryId: string;
+  notes: string;
+  status: 'pending' | 'applied' | 'cancelled';
+  transactionId: string;
+  createdAt: string;
+}
+
 export interface AppData {
   users: User[];
   accounts: Account[];
@@ -247,4 +262,5 @@ export interface AppData {
   creditCards: CreditCard[];
   recurringBills: RecurringBill[];
   splitExpenses: SplitExpense[];
+  scheduledEntries: ScheduledEntry[];
 }

@@ -49,6 +49,7 @@ const DEFAULT_DATA: AppData = {
   creditCards: [],
   recurringBills: [],
   splitExpenses: [],
+  scheduledEntries: [],
 };
 
 export function loadData(): AppData {
